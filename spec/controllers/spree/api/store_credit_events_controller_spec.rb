@@ -3,10 +3,9 @@ require 'spec_helper'
 describe Spree::Api::StoreCreditEventsController do
   render_views
 
-  stub_api_controller_authentication!
+  before { stub_authentication! }
 
   describe "GET mine" do
-
     subject { spree_get :mine, { format: :json } }
 
     before { controller.stub(current_api_user: current_api_user) }
@@ -22,11 +21,10 @@ describe Spree::Api::StoreCreditEventsController do
     end
 
     context "the current api user is authenticated" do
-      let(:current_api_user) { order.user }
-      let(:order) { create(:order, line_items: [line_item]) }
+      let(:current_api_user) { create :user }
+      let(:order) { create(:order, user: current_api_user, line_items: [line_item]) }
 
       context "the user doesn't have store credit" do
-        let(:current_api_user) { create(:user) }
 
         before { subject }
 
@@ -40,8 +38,8 @@ describe Spree::Api::StoreCreditEventsController do
       end
 
       context "the user has store credit" do
-        let(:store_credit)     { create(:store_credit, user: api_user) }
-        let(:current_api_user) { store_credit.user }
+        let!(:store_credit) { create(:store_credit, user: current_api_user) }
+        let(:current_api_user) { create :user }
 
         before { subject }
 
