@@ -64,7 +64,7 @@ describe "Order" do
     subject { order.add_store_credit_payments }
 
     context "there is no store credit" do
-      let(:order)       { create(:store_credits_order_without_user, total: order_total) }
+      let(:order) { create(:store_credits_order_without_user, total: order_total) }
 
       context "there is a credit card payment" do
         let!(:cc_payment) { create(:payment, order: order) }
@@ -102,7 +102,11 @@ describe "Order" do
 
     context "there is enough store credit to pay for the entire order" do
       let(:store_credit) { create(:store_credit, amount: order_total) }
-      let(:order)        { create(:order, user: store_credit.user, total: order_total) }
+      let(:order) do
+        create(:order,
+               user: store_credit.user,
+               total: order_total)
+      end
 
       context "there are no other payments" do
         before do
@@ -123,7 +127,11 @@ describe "Order" do
         before { subject }
 
         it "should invalidate the credit card payment" do
-          cc_payment.reload.state.should == 'invalid'
+          expect(cc_payment.reload.state).to eq 'invalid'
+
+          # FIXME: This is a hack to fix an issue where DatabaseCleaner fails
+          # do to the rollback callback in the payment model.
+          cc_payment.destroy!
         end
       end
 
