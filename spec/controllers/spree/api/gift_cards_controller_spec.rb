@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Spree::Api::GiftCardsController do
   render_views
+
   let!(:secondary_credit_type) { create(:secondary_credit_type) }
   let!(:gc_category) { create(:store_credit_gift_card_category) }
 
@@ -26,7 +27,8 @@ describe Spree::Api::GiftCardsController do
     end
 
     context "the current api user is authenticated" do
-      stub_api_controller_authentication!
+      before { stub_authentication! }
+      let(:current_api_user) { create :user }
 
       let(:parsed_response) { HashWithIndifferentAccess.new(JSON.parse(response.body)) }
 
@@ -61,15 +63,18 @@ describe Spree::Api::GiftCardsController do
       end
 
       context "given a valid gift card redemption code" do
-
         it 'finds the gift card' do
           subject
           assigns(:gift_card).should eq gift_card
         end
 
         it 'redeems the gift card' do
-          Spree::VirtualGiftCard.stub(:active_by_redemption_code).and_return(gift_card)
-          gift_card.should_receive(:redeem).with(api_user)
+          allow(Spree::VirtualGiftCard).
+            to receive(:active_by_redemption_code).
+            and_return(gift_card)
+          expect(gift_card).
+            to receive(:redeem).
+            with(current_api_user)
           subject
         end
 
