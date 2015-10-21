@@ -112,6 +112,8 @@ Spree::Order.class_eval do
     else
       other_payment.update_attributes!(amount: amount)
     end
+
+    payments.reload
   end
 
   def create_store_credit_payment(payment_method, credit, amount)
