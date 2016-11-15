@@ -103,8 +103,8 @@ Spree::Order.class_eval do
   def reconcile_with_credit_card(other_payment, amount)
     return unless other_payment
 
-    unless other_payment.source.is_a?(Spree::CreditCard)
-      raise "Found unexpected payment method. Credit cards are the only other supported payment type"
+    unless other_payment.source.is_a?(Spree::CreditCard) || other_payment.source.is_a?(SpreeBraintree::Source)
+      raise "Found unexpected payment method. Credit cards and Braintree are the only other supported payment types."
     end
 
     if amount.zero?
